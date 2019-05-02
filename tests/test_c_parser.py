@@ -136,6 +136,15 @@ class TestCParser_fundamentals(TestCParser_base):
             ['Decl', 'foo',
                 ['TypeDecl', ['IdentifierType', ['int']]]])
 
+    def test_initial_semi(self):
+        t = self.parse(';')
+        self.assertEqual(len(t.ext), 0)
+        t = self.parse(';int foo;')
+        self.assertEqual(len(t.ext), 1)
+        self.assertEqual(expand_decl(t.ext[0]),
+            ['Decl', 'foo',
+                ['TypeDecl', ['IdentifierType', ['int']]]])
+
     def test_coords(self):
         """ Tests the "coordinates" of parsed elements - file
             name, line and column numbers, with modification
@@ -828,6 +837,19 @@ class TestCParser_fundamentals(TestCParser_base):
                     ['Decl', 'd',
                         ['TypeDecl', ['IdentifierType', ['char']]]]]]]])
 
+    def test_struct_with_initial_semi(self):
+        s1 = """
+            struct {
+                ;int a;
+            } foo;
+        """
+        s1_ast = self.parse(s1)
+        self.assertEqual(expand_decl(s1_ast.ext[0]),
+            ['Decl', 'foo',
+                ['TypeDecl', ['Struct', None,
+                    [['Decl', 'a',
+                        ['TypeDecl', ['IdentifierType', ['int']]]]]]]])
+
     def test_anonymous_struct_union(self):
         s1 = """
             union
@@ -1407,6 +1429,10 @@ class TestCParser_fundamentals(TestCParser_base):
             void main() {
                 #pragma foo
                 for(;;) {}
+                #pragma baz
+                {
+                    int i = 0;
+                }
                 #pragma
             }
             struct s {
@@ -1421,14 +1447,18 @@ class TestCParser_fundamentals(TestCParser_base):
         self.assertIsInstance(s1_ast.ext[1].body.block_items[0], Pragma)
         self.assertEqual(s1_ast.ext[1].body.block_items[0].string, 'foo')
         self.assertEqual(s1_ast.ext[1].body.block_items[0].coord.line, 4)
-
+        
         self.assertIsInstance(s1_ast.ext[1].body.block_items[2], Pragma)
-        self.assertEqual(s1_ast.ext[1].body.block_items[2].string, '')
+        self.assertEqual(s1_ast.ext[1].body.block_items[2].string, 'baz')
         self.assertEqual(s1_ast.ext[1].body.block_items[2].coord.line, 6)
+
+        self.assertIsInstance(s1_ast.ext[1].body.block_items[4], Pragma)
+        self.assertEqual(s1_ast.ext[1].body.block_items[4].string, '')
+        self.assertEqual(s1_ast.ext[1].body.block_items[4].coord.line, 10)
 
         self.assertIsInstance(s1_ast.ext[2].type.type.decls[0], Pragma)
         self.assertEqual(s1_ast.ext[2].type.type.decls[0].string, 'baz')
-        self.assertEqual(s1_ast.ext[2].type.type.decls[0].coord.line, 9)
+        self.assertEqual(s1_ast.ext[2].type.type.decls[0].coord.line, 13)
 
     def test_pragmacomp_or_statement(self):
         s1 = r'''
@@ -1475,8 +1505,10 @@ class TestCParser_fundamentals(TestCParser_base):
         self.assertIsInstance(s1_ast.ext[0].body.block_items[4].iftrue.block_items[1], Assignment)
         self.assertIsInstance(s1_ast.ext[0].body.block_items[5], Switch)
         self.assertIsInstance(s1_ast.ext[0].body.block_items[5].stmt.stmts[0], Compound)
-        self.assertIsInstance(s1_ast.ext[0].body.block_items[5].stmt.stmts[0].block_items[0], Pragma)
-        self.assertIsInstance(s1_ast.ext[0].body.block_items[5].stmt.stmts[0].block_items[1], Assignment)
+        self.assertIsInstance(s1_ast.ext[0].body.block_items[5].stmt.stmts[0].block_items[0],
+                              Pragma)
+        self.assertIsInstance(s1_ast.ext[0].body.block_items[5].stmt.stmts[0].block_items[1],
+                              Assignment)
 
 
 class TestCParser_whole_code(TestCParser_base):
