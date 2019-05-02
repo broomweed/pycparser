@@ -99,6 +99,9 @@ t_SEMI             = r';'
 t_COLON            = r':'
 t_ELLIPSIS         = r'\.\.\.'
 
+# Annotations
+t_ANNOTATION = r'@([A-Za-z_0-9]+)'
+
 # Identifiers
 t_ID = r'[A-Za-z_][A-Za-z0-9_]*'
 

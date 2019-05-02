@@ -129,6 +129,9 @@ class CLexer(object):
         # types with typedef)
         'TYPEID',
 
+        # Annotations (start with @)
+        'ANNOTATION',
+
         # constants
         'INT_CONST_DEC', 'INT_CONST_OCT', 'INT_CONST_HEX', 'INT_CONST_BIN',
         'FLOAT_CONST', 'HEX_FLOAT_CONST',
@@ -183,6 +186,9 @@ class CLexer(object):
 
     # valid C identifiers (K&R2: A.2.3), plus '$' (supported by some compilers)
     identifier = r'[a-zA-Z_$][0-9a-zA-Z_$]*'
+
+    # annotations, for annotating type ownership
+    annotation = r'@[a-zA-Z_$][0-9a-zA-Z_$]*'
 
     hex_prefix = '0[xX]'
     hex_digits = '[0-9a-fA-F]+'
@@ -477,6 +483,10 @@ class CLexer(object):
         t.type = self.keyword_map.get(t.value, "ID")
         if t.type == 'ID' and self.type_lookup_func(t.value):
             t.type = "TYPEID"
+        return t
+
+    @TOKEN(annotation)
+    def t_ANNOTATION(self, t):
         return t
 
     def t_error(self, t):

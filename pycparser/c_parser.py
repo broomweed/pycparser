@@ -847,6 +847,7 @@ class CParser(PLYParser):
         """ type_qualifier  : CONST
                             | RESTRICT
                             | VOLATILE
+                            | ANNOTATION
         """
         p[0] = p[1]
 

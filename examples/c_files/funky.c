@@ -3,7 +3,7 @@ char foo(void)
     return '1';
 }
 
-int maxout_in(int paste, char** matrix)
+int maxout_in(int paste, char* @owned * matrix)
 {
     char o = foo();
     return (int) matrix[1][2] * 5 - paste;

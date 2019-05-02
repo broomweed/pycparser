@@ -9,10 +9,12 @@
 from __future__ import print_function
 import sys
 
+sys.path.extend(['.','..'])
+
 from pycparser import c_parser
 
 text = r"""
-void func(void)
+void func(int const @owned a)
 {
   x = 1;
 }
